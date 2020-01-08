@@ -8,7 +8,3 @@ A repository about my experimentation with the metaflow framework
  * the decorator folder : code associated to the decorator test on metaflow
  * the hearthstone-archetype-estimator folder : code associated to the decorator test on metaflow
  * the data folder : folder that is containing data for the different experimentations
-
- 
-
-
