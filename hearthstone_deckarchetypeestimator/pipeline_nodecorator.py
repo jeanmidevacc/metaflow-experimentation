@@ -16,14 +16,6 @@ import random
 import itertools
 import time
 
-import pandas as pd
-import numpy as np
-
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
-import sklearn
-
 import external as ext
 
 
@@ -51,6 +43,7 @@ class ArchetypeEstimator(FlowSpec):
         """
         Launch the Flow
         """
+        self.tags_decorator = False
         print("Let's go !!\n(I know I could have done something here like loading the decks but I wanted to have a dedicated step for that :-)")
         self.next(self.collect_decks)
     
@@ -81,6 +74,8 @@ class ArchetypeEstimator(FlowSpec):
         """
         Step to do the segmentation of the data between the different datasets (train, test and score)
         """
+        from sklearn.model_selection import train_test_split
+
         # Select the data to score
         self.df_decks_toscore = self.df_decks[self.df_decks["archetype"] == "Unknown"]
         
@@ -217,7 +212,9 @@ class ArchetypeEstimator(FlowSpec):
         """
         Step to compute the model with specific parameters
         """
-  
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.metrics import accuracy_score
+        
         tic = time.time()
 
         # Prepare the model for the training

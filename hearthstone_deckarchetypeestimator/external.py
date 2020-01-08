@@ -17,7 +17,7 @@ def build_array_features_labels(df):
 
     return array_features, array_labels
 
-
+# function to preapre the data for the mlpart
 def prepare_data(df, features):
 
     df["features"] = df["cards"].apply(lambda deck: build_cardfeatures(deck, features))
@@ -36,6 +36,7 @@ def get_model_output(model, classes, array):
         confidences.append(probability[idx_classes])
     return predictions, probabilities, confidences
 
+# Function to update the dataset that will have the predictions
 def update_df_withpredictions(model, classes, array_features, df):
     predictions, probabilities, confidences = get_model_output(model, classes, array_features)
     df["prediction"] = predictions
