@@ -6,7 +6,7 @@ pwd
 counter=1
 while [ $counter -le $NUMBERRUNS ]
 do
-    python $FILE run 
+    python $FILE --environment=conda run
     ((counter++))
 done
 

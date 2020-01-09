@@ -10,7 +10,8 @@ Date : 2020-12-28
 """
 
 # Load the libraries
-from metaflow import FlowSpec, step, Parameter
+from metaflow import FlowSpec, step, Parameter, current, conda_base
+import ast
 import ast
 import random
 import itertools
@@ -30,21 +31,23 @@ parameters_randomforest = {
 combinations_parameters_randomforest = [dict(zip(parameters_randomforest.keys(), elt)) for elt in itertools.product(*parameters_randomforest.values())]
 
 # Defintion of the Flow
+@conda_base(disabled = True, python="3.7.4", libraries={"pandas" : "0.25.2", "numpy" : "1.17.0", "scikit-learn" : "0.22.1"})
 class ArchetypeEstimator(FlowSpec):
     """
     A Flow to estimate in the case of an unknown archetype for a deck, what could be the close4st archetype that can be associated
     """
     
     # Define an input parameter for the Flow (number of top cards to keep to define the )
-    limittopcards =  Parameter("topcards", help = "Top cards to choose", default = random.choice(list(range(1,40))))
+    nbrcards =  Parameter("topcards", help = "Top cards to choose", default = random.choice(list(range(1,40))))
     
     @step
     def start(self):
         """
         Launch the Flow
         """
-        self.tags_decorator = False
-        print("Let's go !!\n(I know I could have done something here like loading the decks but I wanted to have a dedicated step for that :-)")
+        self.tags_script = "nolayer"
+        self.limittopcards = self.nbrcards
+        print("Let's go !!\n I know I could have done something here like loading the decks but I wanted to have a dedicated step for that :-)")
         self.next(self.collect_decks)
     
     @step
@@ -81,12 +84,8 @@ class ArchetypeEstimator(FlowSpec):
         
         # Build the training and testing set
         df_decks_training = self.df_decks[self.df_decks["archetype"] != "Unknown"]
-        df_train, df_test = train_test_split(df_decks_training, train_size = 0.8)
+        self.df_decks_totrain, self.df_decks_totest = train_test_split(df_decks_training, train_size = 0.8)
 
-        # Save the dataframe splitted
-        self.df_decks_totrain = df_train
-        self.df_decks_totest = df_test
-        
         self.next(self.collect_archetypes)
         
     @step
@@ -126,7 +125,7 @@ class ArchetypeEstimator(FlowSpec):
         
         # Select the top cards for the archetype based on the occurency of the card usage in the decks
         self.archetype = self.input
-        self.topcards = df_countcards_archetype["cardid"].head(self.limittopcards).to_list()
+        self.topcards = df_countcards_archetype["cardid"].head(self.nbrcards).to_list()
         
         self.next(self.build_features)
     
@@ -214,7 +213,7 @@ class ArchetypeEstimator(FlowSpec):
         """
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.metrics import accuracy_score
-        
+
         tic = time.time()
 
         # Prepare the model for the training

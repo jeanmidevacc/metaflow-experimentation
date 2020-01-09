@@ -8,7 +8,7 @@ Script to test the different decorator on the metaflow framework
 import random
 from metaflow import FlowSpec, step, Parameter, conda, conda_base
 
-#@conda_base(python="3.7.4", libraries={'pandas' : "0.25.2"})
+#@conda_base(python="3.7.4", libraries={"pandas" : "0.25.2"})
 class ExampleFlow(FlowSpec):
     @step
     def start(self):
