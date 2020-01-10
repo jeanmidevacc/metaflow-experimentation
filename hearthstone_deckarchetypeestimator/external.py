@@ -44,6 +44,19 @@ def update_df_withpredictions(model, classes, array_features, df):
     df["probabilities"] = probabilities
     return df
 
+# Function to get the path 
+def script_path(filename):
+    """
+    A convenience function to get the absolute path to a file in this
+    tutorial's directory. This allows the tutorial to be launched from any
+    directory.
+    """
+    import os
+
+    filepath = os.path.join(os.path.dirname(__file__))
+    return os.path.join(filepath, filename)
+
+
 
 
 

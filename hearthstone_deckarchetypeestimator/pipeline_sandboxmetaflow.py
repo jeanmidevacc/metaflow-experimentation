@@ -10,12 +10,12 @@ Date : 2020-12-28
 """
 
 # Load the libraries
-from metaflow import FlowSpec, step, Parameter, current, conda_base
-import ast
+from metaflow import FlowSpec, step, Parameter, current, conda_base, IncludeFile, batch
 import ast
 import random
 import itertools
 import time
+from io import StringIO
 
 import external as ext
 
@@ -31,7 +31,7 @@ parameters_randomforest = {
 combinations_parameters_randomforest = [dict(zip(parameters_randomforest.keys(), elt)) for elt in itertools.product(*parameters_randomforest.values())]
 
 # Defintion of the Flow
-@conda_base(disabled = True, python="3.7.4", libraries={"pandas" : "0.25.2", "numpy" : "1.17.0", "scikit-learn" : "0.22.1"})
+@conda_base(disabled = False, python="3.7.4", libraries={"pandas" : "0.25.2", "numpy" : "1.17.0", "scikit-learn" : "0.22.1"})
 class ArchetypeEstimator(FlowSpec):
     """
     A Flow to estimate in the case of an unknown archetype for a deck, what could be the close4st archetype that can be associated
@@ -40,6 +40,10 @@ class ArchetypeEstimator(FlowSpec):
     # Define an input parameter for the Flow (number of top cards to keep to define the )
     nbrcards =  Parameter("topcards", help = "Top cards to choose", default = random.choice(list(range(1,40))))
     
+    decks_data = IncludeFile("decks_data",
+                                help="The path to a decks file.",
+                                default=ext.script_path("../data/hearthstone_deckarchetypeestimator/decks_sample.csv"))
+
     @step
     def start(self):
         """
@@ -58,9 +62,9 @@ class ArchetypeEstimator(FlowSpec):
         import pandas as pd
         
         # Collect the decks
-        file_decks = "../data/hearthstone_deckarchetypeestimator/decks_sample.csv"
-        df_decks = pd.read_csv(file_decks)
 
+        df_decks = pd.read_csv(StringIO(self.decks_data))
+        
         # Do some operations (cleaning, formatting) on the dataframe
         df_decks = df_decks[df_decks["is_gooddeck"] == 1]
         df_decks["cards"] = df_decks["cards"].apply(lambda elt: ast.literal_eval(elt))
@@ -129,6 +133,8 @@ class ArchetypeEstimator(FlowSpec):
         
         self.next(self.build_features)
     
+    #@resources(memory=60000, cpu=1)
+    @batch
     @step
     def build_features(self, inputs):
         """
